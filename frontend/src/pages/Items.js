@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useData } from '../state/DataContext';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, ListItem, ListItemText, ListItemSecondaryAction, Typography, Button, Chip, CircularProgress, TextField, Alert, Pagination, Stack } from '@mui/material';
-import List from '@mui/material/List';
+import { FixedSizeList as List } from 'react-window';
 
 // Color palette
 const COLORS = {
@@ -16,6 +16,32 @@ function Items() {
   const { items, fetchItems, query, setQuery, page, setPage, totalPages, loading, error } = useData();
   const [search, setSearch] = useState(query || '');
   const [searching, setSearching] = useState(false);
+
+  // Function to render each row in the virtualized list
+  const renderRow = ({ index, style }) => {
+    const item = items[index];
+
+    return (
+      <div style={style} key={item.id}>
+        <ListItem divider sx={{ '&:hover': { bgcolor: '#f8feff' } }}>
+          <ListItemText
+            primary={item.name}
+            primaryTypographyProps={{ sx: { color: COLORS.dark, fontWeight: 600 } }}
+            secondary={<>
+              <Chip label={item.category} size="small" sx={{ mr: 1, bgcolor: COLORS.soft, color: COLORS.dark }} />
+              <Typography component="span" variant="body2" color="text.secondary">{formatPrice(item.price)}</Typography>
+            </>}
+          />
+
+          <ListItemSecondaryAction>
+            <Button component={RouterLink} to={`/items/${item.id}`} size="small" variant="outlined" sx={{ borderColor: COLORS.mid, color: COLORS.dark }}>
+              View
+            </Button>
+          </ListItemSecondaryAction>
+        </ListItem>
+      </div>
+    );
+  };
 
   // Fetch whenever page or query changes
   useEffect(() => {
@@ -110,31 +136,22 @@ function Items() {
 
         {!loading && !searching && items && items.length > 0 && (
           <>
-            <List sx={{
+            <Box sx={{
               borderRadius: 2,
               overflow: 'hidden',
               bgcolor: '#fff',
-              boxShadow: '0 6px 18px rgba(29,53,87,0.06)'
+              boxShadow: '0 6px 18px rgba(29,53,87,0.06)',
+              height: 600 // Set a fixed height for the virtualized list
             }}>
-              {items.map((item) => (
-                <ListItem key={item.id} divider sx={{ '&:hover': { bgcolor: '#f8feff' } }}>
-                  <ListItemText
-                    primary={item.name}
-                    primaryTypographyProps={{ sx: { color: COLORS.dark, fontWeight: 600 } }}
-                    secondary={<>
-                      <Chip label={item.category} size="small" sx={{ mr: 1, bgcolor: COLORS.soft, color: COLORS.dark }} />
-                      <Typography component="span" variant="body2" color="text.secondary">{formatPrice(item.price)}</Typography>
-                    </>}
-                  />
-
-                  <ListItemSecondaryAction>
-                    <Button component={RouterLink} to={`/items/${item.id}`} size="small" variant="outlined" sx={{ borderColor: COLORS.mid, color: COLORS.dark }}>
-                      View
-                    </Button>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
+              <List
+                height={600}
+                itemCount={items.length}
+                itemSize={88} // Approximate height per item
+                overscanCount={5}
+              >
+                {renderRow}
+              </List>
+            </Box>
 
             <Stack spacing={2} alignItems="center" sx={{ mt: 3 }}>
               <Pagination

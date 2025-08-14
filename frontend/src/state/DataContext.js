@@ -8,7 +8,7 @@ export function DataProvider({ children }) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const limit = 5; // default items per page, can be adjusted later
+  const limit = 50; // default items per page, can be adjusted later
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
